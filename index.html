@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мои задачи</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600&family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0f0f13;
+    --surface:   #17171e;
+    --card:      #1e1e28;
+    --border:    #2a2a38;
+    --accent:    #7c6af7;
+    --accent2:   #a78bfa;
+    --green:     #4ade80;
+    --red:       #f87171;
+    --amber:     #fbbf24;
+    --blue:      #60a5fa;
+    --text:      #e8e8f0;
+    --muted:     #6b6b85;
+    --font-head: 'Unbounded', sans-serif;
+    --font-body: 'Mulish', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 80px;
+  }
+
+  .header {
+    width: 100%; max-width: 620px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 40px;
+    animation: fadeDown .5s ease both;
+  }
+  .logo { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--accent2); }
+  .user-pill {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 6px 14px 6px 8px;
+    font-size: 13px; color: var(--muted);
+  }
+  .avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #fff;
+  }
+  #logout-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--red); font-size: 13px; font-family: var(--font-body);
+    padding: 0; margin-left: 6px; transition: opacity .2s;
+  }
+  #logout-btn:hover { opacity: .7; }
+
+  .card {
+    width: 100%; max-width: 480px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px 32px;
+    animation: fadeUp .45s ease both;
+  }
+  .card-title { font-family: var(--font-head); font-size: 20px; font-weight: 600; margin-bottom: 28px; }
+  .tabs {
+    display: flex; background: var(--surface);
+    border-radius: 10px; padding: 4px; margin-bottom: 28px; gap: 4px;
+  }
+  .tab-btn {
+    flex: 1; border: none; cursor: pointer; padding: 8px;
+    border-radius: 7px; font-family: var(--font-body); font-size: 13px; font-weight: 500;
+    color: var(--muted); background: transparent; transition: all .2s;
+  }
+  .tab-btn.active { background: var(--accent); color: #fff; }
+
+  .field { margin-bottom: 16px; }
+  label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 7px;
+  }
+  input[type=text], input[type=password], input[type=datetime-local], textarea, select {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 11px 14px;
+    font-family: var(--font-body); font-size: 14px; color: var(--text);
+    outline: none; transition: border-color .2s; resize: none;
+    -webkit-appearance: none; appearance: none;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  select option { background: #1e1e28; color: var(--text); }
+  textarea { height: 70px; }
+
+  .btn {
+    padding: 13px; border: none; border-radius: 12px;
+    font-family: var(--font-body); font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: transform .15s, opacity .2s; width: 100%;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: .88; }
+  .btn-ghost {
+    background: var(--surface); color: var(--muted);
+    border: 1px solid var(--border); font-size: 13px; padding: 9px 16px; width: auto;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent2); }
+  .btn-sm { padding: 7px 14px; font-size: 12px; border-radius: 8px; width: auto; }
+
+  .msg {
+    font-size: 13px; border-radius: 9px; padding: 10px 14px; margin-top: 14px; display: none;
+  }
+  .msg.error   { background: #2a1a1a; color: var(--red);   border: 1px solid #3d1f1f; }
+  .msg.success { background: #142214; color: var(--green); border: 1px solid #1e3b1e; }
+  .msg.show    { display: block; }
+
+  #app { width: 100%; max-width: 620px; }
+
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; animation: fadeDown .4s ease both;
+  }
+  .top-title { font-family: var(--font-head); font-size: 22px; font-weight: 600; }
+  .top-actions { display: flex; gap: 8px; }
+
+  .stats {
+    display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+    animation: fadeDown .45s .05s ease both; opacity: 0; animation-fill-mode: both;
+  }
+  .stat {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 16px; font-size: 12px; color: var(--muted);
+  }
+  .stat b { display: block; font-size: 20px; font-weight: 600; color: var(--text); font-family: var(--font-head); }
+
+  .filters-row {
+    display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;
+    animation: fadeDown .45s .07s ease both; opacity: 0; animation-fill-mode: both;
+  }
+  .filter-btn {
+    padding: 6px 14px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--card);
+    color: var(--muted); font-size: 12px; font-family: var(--font-body); font-weight: 600;
+    cursor: pointer; transition: all .2s;
+  }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .add-form, .cat-manager {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px; margin-bottom: 20px;
+    animation: fadeUp .3s ease both;
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .form-grid .field { margin-bottom: 0; }
+  .form-row { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+
+  .cat-manager-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .cat-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; min-height: 20px; }
+  .cat-tag {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 999px; padding: 5px 12px; font-size: 12px;
+  }
+  .cat-tag button {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); font-size: 11px; padding: 0; line-height: 1; transition: color .2s;
+  }
+  .cat-tag button:hover { color: var(--red); }
+  .cat-add-row { display: flex; gap: 8px; }
+  .cat-add-row input { flex: 1; margin-bottom: 0; }
+
+  .tasks-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .task-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 18px;
+    display: flex; align-items: flex-start; gap: 14px;
+    transition: border-color .2s, transform .15s;
+    animation: fadeUp .3s ease both;
+  }
+  .task-item:hover { border-color: #3a3a50; transform: translateY(-1px); }
+  .task-item.done { opacity: .5; }
+
+  .check-wrap {
+    margin-top: 2px; flex-shrink: 0;
+    width: 20px; height: 20px; border-radius: 6px;
+    border: 2px solid var(--border); background: var(--surface);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .check-wrap.checked { background: var(--green); border-color: var(--green); }
+  .check-wrap svg { display: none; }
+  .check-wrap.checked svg { display: block; }
+
+  .task-body { flex: 1; min-width: 0; }
+  .task-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; word-break: break-word; }
+  .task-item.done .task-title { text-decoration: line-through; color: var(--muted); }
+  .task-desc { font-size: 13px; color: var(--muted); margin-bottom: 8px; word-break: break-word; }
+  .task-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+  .priority-badge {
+    font-size: 11px; font-weight: 600; padding: 2px 9px;
+    border-radius: 999px; text-transform: uppercase; letter-spacing: .4px;
+  }
+  .priority-high   { background: #2d1a1a; color: var(--red);   border: 1px solid #3d1f1f; }
+  .priority-medium { background: #2a2010; color: var(--amber); border: 1px solid #3a2e10; }
+  .priority-low    { background: #0e1f20; color: var(--blue);  border: 1px solid #143035; }
+
+  .deadline-badge { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+  .deadline-badge.overdue { color: var(--red); }
+
+  .cat-badge {
+    font-size: 11px; color: var(--accent2);
+    background: #1e1a38; border: 1px solid #2e2850;
+    border-radius: 999px; padding: 2px 9px;
+  }
+
+  .task-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface);
+    cursor: pointer; color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s; font-size: 13px;
+  }
+  .icon-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .empty { text-align: center; padding: 50px 0; color: var(--muted); font-size: 14px; animation: fadeUp .4s ease both; }
+  .empty span { font-size: 32px; display: block; margin-bottom: 12px; }
+
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-10px);} to { opacity:1; transform:translateY(0); } }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header hidden" id="header">
+  <div class="logo">✦ задачи</div>
+  <div class="user-pill">
+    <div class="avatar" id="avatar-letter">?</div>
+    <span id="header-username">—</span>
+    <button id="logout-btn">выйти</button>
+  </div>
+</div>
+
+<div class="card" id="auth-screen">
+  <div class="card-title">Добро пожаловать</div>
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Войти</button>
+    <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Регистрация</button>
+  </div>
+  <div class="field">
+    <label>Имя пользователя</label>
+    <input type="text" id="auth-username" placeholder="Введите имя">
+  </div>
+  <div class="field">
+    <label>Пароль</label>
+    <input type="password" id="auth-password" placeholder="Минимум 6 символов">
+  </div>
+  <button class="btn btn-primary" id="auth-submit-btn" onclick="submitAuth()">Войти</button>
+  <div class="msg" id="auth-msg"></div>
+</div>
+
+<div id="app" class="hidden">
+  <div class="top-bar">
+    <div class="top-title">Мои задачи</div>
+    <div class="top-actions">
+      <button class="btn btn-ghost btn-sm" onclick="toggleCatManager()">Категории</button>
+      <button class="btn btn-ghost btn-sm" onclick="toggleAddForm()">＋ Задача</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="stat-total">0</b>всего</div>
+    <div class="stat"><b id="stat-done">0</b>выполнено</div>
+    <div class="stat"><b id="stat-left">0</b>осталось</div>
+  </div>
+
+  <div class="filters-row" id="status-filters">
+    <button class="filter-btn active" onclick="setStatusFilter(null, this)">Все</button>
+    <button class="filter-btn" onclick="setStatusFilter(false, this)">Активные</button>
+    <button class="filter-btn" onclick="setStatusFilter(true, this)">Выполненные</button>
+  </div>
+
+  <div class="filters-row" id="cat-filters"></div>
+
+  <div class="cat-manager hidden" id="cat-manager">
+    <div class="cat-manager-title">Управление категориями</div>
+    <div class="cat-list" id="cat-list-manage"></div>
+    <div class="cat-add-row">
+      <input type="text" id="new-cat-name" placeholder="Название новой категории">
+      <button class="btn btn-primary btn-sm" onclick="createCategory()">Добавить</button>
+    </div>
+    <div class="msg" id="cat-msg"></div>
+  </div>
+
+  <div class="add-form hidden" id="add-form">
+    <div class="field">
+      <label>Название задачи</label>
+      <input type="text" id="new-title" placeholder="Что нужно сделать?">
+    </div>
+    <div class="field">
+      <label>Описание (необязательно)</label>
+      <textarea id="new-desc" placeholder="Подробности..."></textarea>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Приоритет</label>
+        <select id="new-priority">
+          <option value="low">Низкий</option>
+          <option value="medium" selected>Средний</option>
+          <option value="high">Высокий</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Категория</label>
+        <select id="new-category">
+          <option value="">Без категории</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Дедлайн (необязательно)</label>
+      <input type="datetime-local" id="new-deadline">
+    </div>
+    <div class="form-row">
+      <button class="btn btn-primary" style="flex:1" onclick="createTask()">Добавить задачу</button>
+      <button class="btn btn-ghost" onclick="toggleAddForm()">Отмена</button>
+    </div>
+    <div class="msg" id="task-msg"></div>
+  </div>
+
+  <div class="tasks-list" id="tasks-list"></div>
+</div>
+
+<script>
+  const AUTH_URL = 'http://localhost:8001';
+  const TODO_URL = 'http://localhost:8002';
+
+  let token = localStorage.getItem('token') || null;
+  let statusFilter = null;
+  let categoryFilter = null;
+  let categories = [];
+
+  if (token) {
+    showApp();
+    loadCategories();
+    loadTasks();
+  }
+
+  function switchTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('tab-login').classList.toggle('active', isLogin);
+    document.getElementById('tab-register').classList.toggle('active', !isLogin);
+    document.getElementById('auth-submit-btn').textContent = isLogin ? 'Войти' : 'Зарегистрироваться';
+    hideMsg('auth-msg');
+  }
+
+  function isLoginTab() {
+    return document.getElementById('tab-login').classList.contains('active');
+  }
+
+  async function submitAuth() {
+    const username = document.getElementById('auth-username').value.trim();
+    const password = document.getElementById('auth-password').value;
+    if (!username || !password) { showMsg('auth-msg', 'Заполните все поля', 'error'); return; }
+    const btn = document.getElementById('auth-submit-btn');
+    btn.textContent = '...'; btn.disabled = true;
+    try {
+      if (isLoginTab()) { await login(username, password); }
+      else { await register(username, password); }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = isLoginTab() ? 'Войти' : 'Зарегистрироваться';
+    }
+  }
+
+  async function login(username, password) {
+    const res = await fetch(AUTH_URL + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showMsg('auth-msg', data.detail || 'Ошибка входа', 'error'); return; }
+    token = data.access_token;
+    localStorage.setItem('token', token);
+    localStorage.setItem('username', username);
+    showApp();
+    loadCategories();
+    loadTasks();
+  }
+
+  async function register(username, password) {
+    const res = await fetch(AUTH_URL + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showMsg('auth-msg', data.detail || 'Ошибка регистрации', 'error'); return; }
+    showMsg('auth-msg', 'Аккаунт создан! Теперь войдите', 'success');
+    switchTab('login');
+  }
+
+  function logout() {
+    token = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    categories = [];
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('header').classList.add('hidden');
+    document.getElementById('auth-screen').classList.remove('hidden');
+    document.getElementById('auth-username').value = '';
+    document.getElementById('auth-password').value = '';
+    switchTab('login');
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', logout);
+  document.getElementById('auth-password').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { submitAuth(); }
+  });
+
+  function showApp() {
+    const username = localStorage.getItem('username') || '?';
+    document.getElementById('header-username').textContent = username;
+    document.getElementById('avatar-letter').textContent = username[0].toUpperCase();
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('header').classList.remove('hidden');
+    document.getElementById('app').classList.remove('hidden');
+  }
+
+  async function loadCategories() {
+    const res = await fetch(TODO_URL + '/categories/', {
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    if (!res.ok) { return; }
+    categories = await res.json();
+    renderCategoryFilters();
+    renderCategoryManager();
+    renderCategorySelect();
+  }
+
+  function renderCategoryFilters() {
+    const row = document.getElementById('cat-filters');
+    row.innerHTML = '';
+    if (categories.length === 0) { return; }
+    const allBtn = document.createElement('button');
+    allBtn.className = 'filter-btn' + (categoryFilter === null ? ' active' : '');
+    allBtn.textContent = 'Все категории';
+    allBtn.onclick = function() { setCategoryFilter(null, allBtn); };
+    row.appendChild(allBtn);
+    categories.forEach(function(cat) {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn' + (categoryFilter === cat.id ? ' active' : '');
+      btn.textContent = cat.name;
+      btn.onclick = function() { setCategoryFilter(cat.id, btn); };
+      row.appendChild(btn);
+    });
+  }
+
+  function renderCategoryManager() {
+    const list = document.getElementById('cat-list-manage');
+    list.innerHTML = '';
+    if (categories.length === 0) {
+      list.innerHTML = '<span style="font-size:13px;color:var(--muted)">Категорий пока нет</span>';
+      return;
+    }
+    categories.forEach(function(cat) {
+      const tag = document.createElement('div');
+      tag.className = 'cat-tag';
+      tag.innerHTML = escapeHtml(cat.name) + '<button onclick="deleteCategory(' + cat.id + ')">✕</button>';
+      list.appendChild(tag);
+    });
+  }
+
+  function renderCategorySelect() {
+    const sel = document.getElementById('new-category');
+    sel.innerHTML = '<option value="">Без категории</option>';
+    categories.forEach(function(cat) {
+      const opt = document.createElement('option');
+      opt.value = cat.id;
+      opt.textContent = cat.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  async function createCategory() {
+    const name = document.getElementById('new-cat-name').value.trim();
+    if (!name) { showMsg('cat-msg', 'Введите название', 'error'); return; }
+    const res = await fetch(TODO_URL + '/categories/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) { showMsg('cat-msg', 'Ошибка при создании', 'error'); return; }
+    document.getElementById('new-cat-name').value = '';
+    hideMsg('cat-msg');
+    await loadCategories();
+  }
+
+  async function deleteCategory(id) {
+    await fetch(TODO_URL + '/categories/' + id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    if (categoryFilter === id) { categoryFilter = null; }
+    await loadCategories();
+    loadTasks();
+  }
+
+  function toggleCatManager() {
+    document.getElementById('cat-manager').classList.toggle('hidden');
+    document.getElementById('add-form').classList.add('hidden');
+  }
+
+  async function loadTasks() {
+    let url = TODO_URL + '/tasks/?';
+    if (statusFilter !== null) { url += 'done=' + statusFilter + '&'; }
+    if (categoryFilter !== null) { url += 'category_id=' + categoryFilter + '&'; }
+    const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+    if (res.status === 401) { logout(); return; }
+    const tasks = await res.json();
+    renderTasks(tasks);
+    updateStats(tasks);
+  }
+
+  function renderTasks(tasks) {
+    const list = document.getElementById('tasks-list');
+    list.innerHTML = '';
+    if (tasks.length === 0) {
+      list.innerHTML = '<div class="empty"><span>✦</span>Задач пока нет</div>';
+      return;
+    }
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    tasks.sort(function(a, b) {
+      if (a.done !== b.done) { return a.done ? 1 : -1; }
+      return (priorityOrder[a.priority] || 1) - (priorityOrder[b.priority] || 1);
+    });
+    tasks.forEach(function(task, index) {
+      const item = document.createElement('div');
+      item.className = 'task-item' + (task.done ? ' done' : '');
+      item.style.animationDelay = (index * 0.04) + 's';
+
+      const priorityLabel = { low: 'Низкий', medium: 'Средний', high: 'Высокий' };
+      const priorityClass = 'priority-' + (task.priority || 'medium');
+
+      let deadlineHtml = '';
+      if (task.deadline) {
+        const dl = new Date(task.deadline);
+        const overdue = !task.done && dl < new Date();
+        const formatted = dl.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+          + ' ' + dl.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        deadlineHtml = '<span class="deadline-badge' + (overdue ? ' overdue' : '') + '">⏰ ' + formatted + '</span>';
+      }
+
+      const catHtml = task.category
+        ? '<span class="cat-badge">' + escapeHtml(task.category.name) + '</span>'
+        : '';
+
+      item.innerHTML =
+        '<div class="check-wrap' + (task.done ? ' checked' : '') + '" onclick="toggleTask(' + task.id + ', ' + task.done + ')">' +
+          '<svg width="11" height="9" viewBox="0 0 11 9" fill="none">' +
+            '<path d="M1 4L4 7L10 1" stroke="#0f0f13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '</svg>' +
+        '</div>' +
+        '<div class="task-body">' +
+          '<div class="task-title">' + escapeHtml(task.title) + '</div>' +
+          (task.description ? '<div class="task-desc">' + escapeHtml(task.description) + '</div>' : '') +
+          '<div class="task-meta">' +
+            '<span class="priority-badge ' + priorityClass + '">' + (priorityLabel[task.priority] || 'Средний') + '</span>' +
+            deadlineHtml + catHtml +
+          '</div>' +
+        '</div>' +
+        '<div class="task-actions">' +
+          '<button class="icon-btn" onclick="deleteTask(' + task.id + ')" title="Удалить">✕</button>' +
+        '</div>';
+
+      list.appendChild(item);
+    });
+  }
+
+  function updateStats(tasks) {
+    const total = tasks.length;
+    const done = tasks.filter(function(t) { return t.done; }).length;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-done').textContent = done;
+    document.getElementById('stat-left').textContent = total - done;
+  }
+
+  async function toggleTask(id, currentDone) {
+    await fetch(TODO_URL + '/tasks/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ done: !currentDone }),
+    });
+    loadTasks();
+  }
+
+  async function deleteTask(id) {
+    await fetch(TODO_URL + '/tasks/' + id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    loadTasks();
+  }
+
+  async function createTask() {
+    const title = document.getElementById('new-title').value.trim();
+    if (!title) { showMsg('task-msg', 'Введите название задачи', 'error'); return; }
+
+    const body = { title, priority: document.getElementById('new-priority').value };
+    const desc = document.getElementById('new-desc').value.trim();
+    const categoryId = document.getElementById('new-category').value;
+    const deadlineRaw = document.getElementById('new-deadline').value;
+
+    if (desc) { body.description = desc; }
+    if (categoryId) { body.category_id = parseInt(categoryId); }
+    if (deadlineRaw) { body.deadline = new Date(deadlineRaw).toISOString(); }
+
+    const res = await fetch(TODO_URL + '/tasks/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) { showMsg('task-msg', 'Ошибка при создании задачи', 'error'); return; }
+
+    document.getElementById('new-title').value = '';
+    document.getElementById('new-desc').value = '';
+    document.getElementById('new-deadline').value = '';
+    document.getElementById('new-priority').value = 'medium';
+    document.getElementById('new-category').value = '';
+    toggleAddForm();
+    loadTasks();
+  }
+
+  function setStatusFilter(value, btn) {
+    statusFilter = value;
+    document.querySelectorAll('#status-filters .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    loadTasks();
+  }
+
+  function setCategoryFilter(value, btn) {
+    categoryFilter = value;
+    document.querySelectorAll('#cat-filters .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    loadTasks();
+  }
+
+  function toggleAddForm() {
+    document.getElementById('add-form').classList.toggle('hidden');
+    document.getElementById('cat-manager').classList.add('hidden');
+    hideMsg('task-msg');
+  }
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text; el.className = 'msg ' + type + ' show';
+  }
+  function hideMsg(id) { document.getElementById(id).className = 'msg'; }
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+</script>
+</body>
+</html>
