@@ -235,6 +235,24 @@
   @keyframes fadeUp   { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
   @keyframes fadeDown { from { opacity:0; transform:translateY(-10px);} to { opacity:1; transform:translateY(0); } }
   .hidden { display: none !important; }
+
+  .instance-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1a1a2e;
+    border-top: 1px solid #2a2a3e;
+    padding: 6px 16px;
+    display: flex;
+    gap: 20px;
+    font-size: 11px;
+    color: #666;
+    z-index: 100;
+  }
+  .instance-bar span { color: #888; }
+  .instance-bar b { color: #7c6ff7; }
+  #app { padding-bottom: 36px; }
 </style>
 </head>
 <body>
@@ -338,9 +356,10 @@
   <div class="tasks-list" id="tasks-list"></div>
 </div>
 
-<script>
-  const AUTH_URL = 'http://localhost:8001';
-  const TODO_URL = 'http://localhost:8002';
+<script src="/config.js"></script>
+  <script>
+  const AUTH_URL = window.AUTH_URL || 'http://localhost:8001';
+  const TODO_URL = window.TODO_URL || 'http://localhost:8002';
 
   let token = sessionStorage.getItem('token') || null;
   let statusFilter = null;
@@ -505,11 +524,10 @@
   }
 
   async function deleteCategory(id) {
-    const res = await fetch(TODO_URL + '/categories/' + id, {
+    await fetch(TODO_URL + '/categories/' + id, {
       method: 'DELETE',
       headers: { 'Authorization': 'Bearer ' + token },
     });
-    if (!res.ok) { showMsg('cat-msg', 'Ошибка при удалении категории', 'error'); return; }
     if (categoryFilter === id) { categoryFilter = null; }
     await loadCategories();
     loadTasks();
@@ -595,21 +613,19 @@
   }
 
   async function toggleTask(id, currentDone) {
-    const res = await fetch(TODO_URL + '/tasks/' + id, {
+    await fetch(TODO_URL + '/tasks/' + id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ done: !currentDone }),
     });
-    if (!res.ok) { showMsg('task-msg', 'Ошибка при обновлении задачи', 'error'); return; }
     loadTasks();
   }
 
   async function deleteTask(id) {
-    const res = await fetch(TODO_URL + '/tasks/' + id, {
+    await fetch(TODO_URL + '/tasks/' + id, {
       method: 'DELETE',
       headers: { 'Authorization': 'Bearer ' + token },
     });
-    if (!res.ok) { showMsg('task-msg', 'Ошибка при удалении задачи', 'error'); return; }
     loadTasks();
   }
 
@@ -673,5 +689,11 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 </script>
+
+<div class="instance-bar" id="instance-bar" style="display:none">
+  <span>auth: <b id="auth-instance">—</b></span>
+  <span>todo: <b id="todo-instance">—</b></span>
+  <span style="margin-left:auto; color:#444">балансировка нагрузки</span>
+</div>
 </body>
 </html>
