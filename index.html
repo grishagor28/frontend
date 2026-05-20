@@ -338,10 +338,9 @@
   <div class="tasks-list" id="tasks-list"></div>
 </div>
 
-<script src="/config.js"></script>
-  <script>
-  const AUTH_URL = window.AUTH_URL || 'http://localhost:8001';
-  const TODO_URL = window.TODO_URL || 'http://localhost:8002';
+<script>
+  const AUTH_URL = 'http://localhost:8001';
+  const TODO_URL = 'http://localhost:8002';
 
   let token = sessionStorage.getItem('token') || null;
   let statusFilter = null;
@@ -506,10 +505,11 @@
   }
 
   async function deleteCategory(id) {
-    await fetch(TODO_URL + '/categories/' + id, {
+    const res = await fetch(TODO_URL + '/categories/' + id, {
       method: 'DELETE',
       headers: { 'Authorization': 'Bearer ' + token },
     });
+    if (!res.ok) { showMsg('cat-msg', 'Ошибка при удалении категории', 'error'); return; }
     if (categoryFilter === id) { categoryFilter = null; }
     await loadCategories();
     loadTasks();
@@ -595,19 +595,21 @@
   }
 
   async function toggleTask(id, currentDone) {
-    await fetch(TODO_URL + '/tasks/' + id, {
+    const res = await fetch(TODO_URL + '/tasks/' + id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ done: !currentDone }),
     });
+    if (!res.ok) { showMsg('task-msg', 'Ошибка при обновлении задачи', 'error'); return; }
     loadTasks();
   }
 
   async function deleteTask(id) {
-    await fetch(TODO_URL + '/tasks/' + id, {
+    const res = await fetch(TODO_URL + '/tasks/' + id, {
       method: 'DELETE',
       headers: { 'Authorization': 'Bearer ' + token },
     });
+    if (!res.ok) { showMsg('task-msg', 'Ошибка при удалении задачи', 'error'); return; }
     loadTasks();
   }
 
