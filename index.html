@@ -338,9 +338,10 @@
   <div class="tasks-list" id="tasks-list"></div>
 </div>
 
-<script>
-  const AUTH_URL = 'http://localhost:8001';
-  const TODO_URL = 'http://localhost:8002';
+<script src="/config.js"></script>
+  <script>
+  const AUTH_URL = window.AUTH_URL || 'http://localhost:8001';
+  const TODO_URL = window.TODO_URL || 'http://localhost:8002';
 
   let token = sessionStorage.getItem('token') || null;
   let statusFilter = null;
