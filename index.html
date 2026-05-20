@@ -683,6 +683,27 @@
     el.textContent = text; el.className = 'msg ' + type + ' show';
   }
   function hideMsg(id) { document.getElementById(id).className = 'msg'; }
+
+  async function updateInstanceInfo() {
+    try {
+      const [authRes, todoRes] = await Promise.all([
+        fetch(AUTH_URL + '/instance'),
+        fetch(TODO_URL + '/instance'),
+      ]);
+      if (authRes.ok) {
+        const data = await authRes.json();
+        document.getElementById('auth-instance').textContent = data.instance;
+      }
+      if (todoRes.ok) {
+        const data = await todoRes.json();
+        document.getElementById('todo-instance').textContent = data.instance;
+      }
+      document.getElementById('instance-bar').style.display = 'flex';
+    } catch (e) {}
+  }
+
+  setInterval(updateInstanceInfo, 3000);
+
   function escapeHtml(str) {
     return String(str)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;')
